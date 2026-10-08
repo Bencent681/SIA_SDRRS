@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Request {{ object.request_no }}{% endblock %}
+{% block page_title %}Request Details{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header">
+      <h2>Request Information</h2>
+      <span class="badge badge-{{ object.status|lower }} badge-lg">{{ object.status }}</span>
+    </div>
+
+    <dl class="detail-list">
+      <div><dt>Request ID</dt><dd>{{ object.request_no }}</dd></div>
+      <div><dt>Student ID</dt><dd>{{ object.student_id }}</dd></div>
+      <div><dt>Student Name</dt><dd>{{ object.student_name }}</dd></div>
+      <div><dt>Course</dt><dd>{{ object.course }}</dd></div>
+      <div><dt>Year Level</dt><dd>{{ object.year_level }}</dd></div>
+      <div><dt>Document Type</dt><dd>{{ object.document_type }}</dd></div>
+      <div><dt>Request Date</dt><dd>{{ object.request_date|date:"M d, Y h:i A" }}</dd></div>
+      <div><dt>Status</dt><dd><span class="badge badge-{{ object.status|lower }}">{{ object.status }}</span></dd></div>
+      <div>
+        <dt>Release Date</dt>
+        <dd>{% if object.release_date %}{{ object.release_date|date:"M d, Y h:i A" }}{% else %}<span class="muted">Not yet released</span>{% endif %}</dd>
+      </div>
+      <div class="span-2"><dt>Remarks</dt><dd>{% if object.remarks %}{{ object.remarks|linebreaksbr }}{% else %}<span class="muted">No remarks yet.</span>{% endif %}</dd></div>
+    </dl>
+  </section>
+
+  <aside class="stack">
+    <section class="card">
+      <div class="card-header"><h2>Status Workflow</h2></div>
+      <ol class="timeline">
+        <li class="{% if object.status == 'Pending' %}current{% elif object.status == 'Ready' or object.status == 'Released' %}done{% endif %}">
+          <span class="dot"></span>
+          <div><strong>Pending</strong><div class="muted small">Request submitted on {{ object.request_date|date:"M d, Y" }}</div></div>
+        </li>
+        <li class="{% if object.status == 'Ready' %}current{% elif object.status == 'Released' %}done{% endif %}">
+          <span class="dot"></span>
+          <div><strong>Ready</strong><div class="muted small">Prepared by the Registrar, ready for claiming</div></div>
+        </li>
+        <li class="{% if object.status == 'Released' %}current{% endif %}">
+          <span class="dot"></span>
+          <div><strong>Released</strong><div class="muted small">
+            {% if object.release_date %}Claimed on {{ object.release_date|date:"M d, Y h:i A" }}{% else %}Awaiting release{% endif %}
+          </div></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2>Actions</h2></div>
+
+      {% if is_registrar %}
+        {% if object.status == 'Pending' %}
+          <form method="post" action="{% url 'mark_ready' object.pk %}" class="action-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ready btn-block">Mark as Ready</button>
+          </form>
+        {% elif object.status == 'Ready' %}
+          <form method="post" action="{% url 'mark_released' object.pk %}" class="action-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-released btn-block">Mark as Released</button>
+          </form>
+        {% else %}
+          <p class="empty">This document has been released. No further status changes are allowed.</p>
+        {% endif %}
+
+        <div class="btn-row">
+          <a href="{% url 'request_edit' object.pk %}" class="btn btn-block">Edit Request</a>
+          <a href="{% url 'request_delete' object.pk %}" class="btn btn-danger btn-block">Delete Request</a>
+        </div>
+      {% else %}
+        <p class="empty">
+          This is a read-only view. The Registrar updates the status, release date
+          and remarks. You will see the changes here as soon as they are saved.
+        </p>
+        <a href="{% url 'request_list' %}" class="btn btn-block">Back to My Requests</a>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

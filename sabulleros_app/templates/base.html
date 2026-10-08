@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SDRRS{% endblock %} | Student Document Request &amp; Release System</title>
+  <link rel="stylesheet" href="{% static 'sdrrs/css/style.css' %}">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-symbol" aria-hidden="true">S</span>
+        <span class="brand-copy">
+          <span class="brand-mark">SDRRS</span>
+          <span class="brand-sub">Student Document Services</span>
+        </span>
+      </div>
+
+      <nav class="nav">
+        <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          Dashboard
+        </a>
+        <a href="{% url 'request_list' %}" class="nav-link {% if request.resolver_match.url_name == 'request_list' %}active{% endif %}">
+          {% if is_registrar %}All Requests{% else %}My Requests{% endif %}
+        </a>
+        {% if is_registrar %}
+          <a href="{% url 'request_create' %}" class="nav-link {% if request.resolver_match.url_name == 'request_create' %}active{% endif %}">
+            New Request
+          </a>
+          <span class="nav-label">Management</span>
+          <a href="{% url 'request_list' %}?status=Pending" class="nav-link">Pending Requests</a>
+          <a href="{% url 'request_list' %}?status=Ready" class="nav-link">Ready Documents</a>
+          <a href="{% url 'request_list' %}?status=Released" class="nav-link">Released Documents</a>
+        {% endif %}
+        {% if user.is_staff or user.is_superuser %}
+          <span class="nav-label">Administration</span>
+          <a href="{% url 'admin:index' %}" class="nav-link">Django Admin</a>
+        {% endif %}
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-box">
+          <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+          <span class="user-role">{% if is_registrar %}Registrar / Admin{% else %}Student{% endif %}</span>
+        </div>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-logout">Log out</button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</button>
+        <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+        <div class="topbar-user">
+          <span class="topbar-avatar" aria-hidden="true">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</span>
+          <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+        </div>
+      </header>
+
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" data-auto-dismiss>
+              <span>{{ message }}</span>
+              <button type="button" class="alert-close" aria-label="Close">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="content">
+        {% block content %}{% endblock %}
+      </div>
+
+      <footer class="footer">
+        SDRRS &mdash; Student Document Request and Release System
+      </footer>
+    </main>
+  </div>
+
+  <script src="{% static 'sdrrs/js/main.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

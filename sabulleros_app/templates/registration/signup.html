@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#112c37">
+  <title>Create account | SDRRS</title>
+  <link rel="stylesheet" href="{% static 'sdrrs/css/style.css' %}">
+</head>
+<body class="auth-body">
+  <main class="auth-shell auth-shell-signup">
+    <section class="auth-aside">
+      <a class="auth-brand" href="{% url 'login' %}">
+        <span class="auth-brand-symbol" aria-hidden="true">S</span>
+        <span>SDRRS</span>
+      </a>
+      <div class="auth-aside-copy">
+        <p class="auth-kicker">A BETTER WAY TO GET STARTED</p>
+        <h1>Make document requests the easy part.</h1>
+        <p>Create your student account to request official documents and follow their progress from one place.</p>
+      </div>
+      <div class="auth-aside-note">
+        <span class="auth-note-icon" aria-hidden="true">&#10003;</span>
+        <span>Free student account &middot; Your requests stay yours</span>
+      </div>
+      <span class="auth-orbit auth-orbit-one" aria-hidden="true"></span>
+      <span class="auth-orbit auth-orbit-two" aria-hidden="true"></span>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-form-wrap">
+        <p class="auth-overline">GET STARTED</p>
+        <h2>Create your account</h2>
+        <p class="auth-description">Set up your student login. You can add your academic details when you make a request.</p>
+
+        <form method="post" class="form auth-form" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-error" role="alert">
+              {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="auth-name-fields">
+            {% for field in form %}
+              {% if field.name == 'first_name' or field.name == 'last_name' %}
+                <div class="form-group">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% for field in form %}
+            {% if field.name != 'first_name' and field.name != 'last_name' %}
+              <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<span class="help">{{ field.help_text }}</span>{% endif %}
+                {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          <button type="submit" class="btn btn-primary btn-block auth-submit">Create student account <span aria-hidden="true">&rarr;</span></button>
+        </form>
+
+        <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+        <p class="auth-foot">Student accounts cannot access registrar or administration tools.</p>
+      </div>
+      <span class="auth-panel-footer">STUDENT DOCUMENT REQUEST &amp; RELEASE SYSTEM</span>
+    </section>
+  </main>
+</body>
+</html>

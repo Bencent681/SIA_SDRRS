@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Request{% else %}Request a Document{% endif %}{% endblock %}
+{% block page_title %}{% if is_edit %}Edit Request {{ object.request_no }}{% else %}Request a Document{% endif %}{% endblock %}
+
+{% block content %}
+<div class="grid-2 form-layout">
+  <section class="card">
+    <div class="card-header">
+      <h2>{% if is_edit %}Request Information{% else %}Document Request Form{% endif %}</h2>
+    </div>
+
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-error">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-grid">
+        {% for field in form.visible_fields %}
+          <div class="form-group {% if field.name == 'remarks' or field.name == 'student' %}span-2{% endif %}">
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %}<span class="req">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}<span class="help">{{ field.help_text }}</span>{% endif %}
+            {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          {% if is_edit %}Save Changes{% else %}Submit Request{% endif %}
+        </button>
+        {% if is_edit %}
+          <a href="{% url 'request_detail' object.pk %}" class="btn">Cancel</a>
+        {% else %}
+          <a href="{% url 'request_list' %}" class="btn">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <aside class="card info-card">
+    <h3>How it works</h3>
+    <ol class="steps">
+      <li><strong>Submit</strong> &mdash; your request is created with the status <span class="badge badge-pending">Pending</span>.</li>
+      <li><strong>Processing</strong> &mdash; the Registrar prepares the document and marks it <span class="badge badge-ready">Ready</span>.</li>
+      <li><strong>Release</strong> &mdash; you claim the document; it becomes <span class="badge badge-released">Released</span> and the release date is recorded.</li>
+    </ol>
+
+    <h3>Automatically generated</h3>
+    <ul class="plain-list">
+      <li>Request ID</li>
+      <li>Request Date</li>
+      <li>Status <span class="muted">(always starts as Pending)</span></li>
+    </ul>
+
+    <h3>Available documents</h3>
+    <ul class="plain-list">
+      <li>Certificate of Enrollment</li>
+      <li>Transcript of Records</li>
+      <li>Certificate of Grades</li>
+      <li>Good Moral Certificate</li>
+      <li>School Clearance</li>
+    </ul>
+  </aside>
+</div>
+{% endblock %}

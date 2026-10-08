@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <div>
+    <p class="eyebrow">YOUR DOCUMENTS, IN ONE PLACE</p>
+    <h2 class="welcome-title">Good to see you, {{ request.user.first_name|default:request.user.username }}.</h2>
+    <p class="muted">
+      {% if is_registrar %}Here is the latest overview of student document requests.{% else %}Stay up to date with your requests and know what happens next.{% endif %}
+    </p>
+  </div>
+  <a href="{% url 'request_create' %}" class="btn btn-primary"><span aria-hidden="true">+</span> Request a document</a>
+</div>
+
+{% if released_requests %}
+<section class="release-updates" aria-labelledby="release-updates-title">
+  <div class="release-updates-heading">
+    <span class="release-updates-icon" aria-hidden="true">&#10003;</span>
+    <div>
+      <p class="release-updates-eyebrow">STATUS UPDATE</p>
+      <h2 id="release-updates-title">{% if released_requests|length == 1 %}Your document has been released{% else %}Your documents have been released{% endif %}</h2>
+      <p>These documents are marked as released by the Registrar.</p>
+    </div>
+  </div>
+  <ul class="release-update-list">
+    {% for r in released_requests %}
+    <li>
+      <div class="release-update-document">
+        <span class="release-document-icon" aria-hidden="true">&#10003;</span>
+        <div>
+          <a href="{% url 'request_detail' r.pk %}">{{ r.document_type }}</a>
+          <span>{{ r.request_no }}{% if r.release_date %} &middot; Released {{ r.release_date|date:"M d, Y" }}{% endif %}</span>
+        </div>
+      </div>
+      <a class="release-update-link" href="{% url 'request_detail' r.pk %}">View details <span aria-hidden="true">&rarr;</span></a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="cards">
+  <div class="card stat-card stat-total">
+    <span class="stat-label">Total Requests</span>
+    <span class="stat-value">{{ total_requests }}</span>
+    <span class="stat-note">{{ scope_label }}</span>
+  </div>
+  <div class="card stat-card stat-pending">
+    <span class="stat-label">Pending</span>
+    <span class="stat-value">{{ pending_count }}</span>
+    <span class="stat-note">Awaiting processing</span>
+  </div>
+  <div class="card stat-card stat-ready">
+    <span class="stat-label">Ready</span>
+    <span class="stat-value">{{ ready_count }}</span>
+    <span class="stat-note">Ready for claiming</span>
+  </div>
+  <div class="card stat-card stat-released">
+    <span class="stat-label">Released</span>
+    <span class="stat-value">{{ released_count }}</span>
+    <span class="stat-note">Already claimed</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card dashboard-panel">
+    <div class="card-header">
+      <h2>Recent Document Requests</h2>
+      <a class="btn btn-sm" href="{% url 'request_list' %}">View all</a>
+    </div>
+    {% if recent_requests %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>Document Type</th>
+            {% if is_registrar %}<th>Student</th>{% endif %}
+            <th>Request Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recent_requests %}
+          <tr>
+            <td><a class="link" href="{% url 'request_detail' r.pk %}">{{ r.request_no }}</a></td>
+            <td>{{ r.document_type }}</td>
+            {% if is_registrar %}<td>{{ r.student_name }} <span class="muted">({{ r.student_id }})</span></td>{% endif %}
+            <td>{{ r.request_date|date:"M d, Y" }}</td>
+            <td><span class="badge badge-{{ r.status|lower }}">{{ r.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="empty">No document requests yet.
+        <a class="link" href="{% url 'request_create' %}">Submit your first request</a>.
+      </p>
+    {% endif %}
+  </section>
+
+  <section class="card dashboard-panel">
+    <div class="card-header">
+      <h2>{% if is_registrar %}Needs Attention{% else %}Pending Requests{% endif %}</h2>
+    </div>
+    {% if attention_requests %}
+      <ul class="attention-list">
+        {% for r in attention_requests %}
+        <li>
+          <div>
+            <a class="link" href="{% url 'request_detail' r.pk %}">{{ r.request_no }}</a>
+            <span class="muted">{{ r.document_type }}</span>
+            {% if is_registrar %}
+              <div class="muted small">{{ r.student_name }} &middot; {{ r.student_id }} &middot; {{ r.course }}</div>
+            {% endif %}
+          </div>
+          <span class="badge badge-{{ r.status|lower }}">{{ r.status }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">Nothing needs attention right now.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

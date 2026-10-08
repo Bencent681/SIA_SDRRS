@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_registrar %}All Requests{% else %}My Requests{% endif %}{% endblock %}
+{% block page_title %}{% if is_registrar %}All Document Requests{% else %}My Document Requests{% endif %}{% endblock %}
+
+{% block content %}
+{% if is_registrar %}
+<div class="tabs">
+  <a href="{% url 'request_list' %}" class="tab {% if not status_filter %}active{% endif %}">All <span class="tab-count">{{ all_count }}</span></a>
+  <a href="?status=Pending" class="tab {% if status_filter == 'Pending' %}active{% endif %}">Pending <span class="tab-count">{{ pending_count }}</span></a>
+  <a href="?status=Ready" class="tab {% if status_filter == 'Ready' %}active{% endif %}">Ready <span class="tab-count">{{ ready_count }}</span></a>
+  <a href="?status=Released" class="tab {% if status_filter == 'Released' %}active{% endif %}">Released <span class="tab-count">{{ released_count }}</span></a>
+</div>
+
+<form method="get" class="filters card">
+  <div class="filter-row">
+    <div class="form-group">
+      <label for="id_status">Status</label>
+      <select name="status" id="id_status">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="id_document_type">Document Type</label>
+      <select name="document_type" id="id_document_type">
+        <option value="">All document types</option>
+        {% for value, label in document_type_choices %}
+          <option value="{{ value }}" {% if document_type_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="id_student_id">Student ID</label>
+      <input type="text" name="student_id" id="id_student_id" value="{{ student_id_filter }}" placeholder="e.g. 2024-00123">
+    </div>
+    <div class="form-group">
+      <label for="id_q">Search</label>
+      <input type="text" name="q" id="id_q" value="{{ query }}" placeholder="Request ID, Student ID or Name">
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      <a href="{% url 'request_list' %}" class="btn">Reset</a>
+    </div>
+  </div>
+</form>
+{% endif %}
+
+<section class="card">
+  <div class="card-header">
+    <h2>{% if is_registrar %}Requests{% else %}My Requests{% endif %}</h2>
+    {% if not is_registrar %}
+      <a href="{% url 'request_create' %}" class="btn btn-primary btn-sm">+ Request a Document</a>
+    {% endif %}
+  </div>
+
+  {% if requests %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Request ID</th>
+          {% if is_registrar %}
+            <th>Student ID</th>
+            <th>Student Name</th>
+            <th>Course</th>
+            <th>Year Level</th>
+          {% endif %}
+          <th>Document Type</th>
+          <th>Request Date</th>
+          <th>Status</th>
+          <th>Release Date</th>
+          {% if not is_registrar %}<th>Remarks</th>{% endif %}
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td><a class="link" href="{% url 'request_detail' r.pk %}">{{ r.request_no }}</a></td>
+          {% if is_registrar %}
+            <td>{{ r.student_id }}</td>
+            <td>{{ r.student_name }}</td>
+            <td>{{ r.course }}</td>
+            <td>{{ r.year_level }}</td>
+          {% endif %}
+          <td>{{ r.document_type }}</td>
+          <td>{{ r.request_date|date:"M d, Y h:i A" }}</td>
+          <td><span class="badge badge-{{ r.status|lower }}">{{ r.status }}</span></td>
+          <td>{% if r.release_date %}{{ r.release_date|date:"M d, Y h:i A" }}{% else %}<span class="muted">Not yet released</span>{% endif %}</td>
+          {% if not is_registrar %}<td>{% if r.remarks %}{{ r.remarks|truncatechars:60 }}{% else %}<span class="muted">None</span>{% endif %}</td>{% endif %}
+          <td><a class="btn btn-sm" href="{% url 'request_detail' r.pk %}">View Details</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="empty">
+      {% if is_registrar %}
+        No requests match the current filters.
+      {% else %}
+        You have not submitted any document request yet.
+        <a class="link" href="{% url 'request_create' %}">Submit your first request</a>.
+      {% endif %}
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

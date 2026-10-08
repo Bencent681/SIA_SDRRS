@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#112c37">
+  <title>Sign in | SDRRS</title>
+  <link rel="stylesheet" href="{% static 'sdrrs/css/style.css' %}">
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-aside">
+      <a class="auth-brand" href="{% url 'login' %}">
+        <span class="auth-brand-symbol" aria-hidden="true">S</span>
+        <span>SDRRS</span>
+      </a>
+      <div class="auth-aside-copy">
+        <p class="auth-kicker">STUDENT DOCUMENT SERVICES</p>
+        <h1>Your school documents,<br>without the runaround.</h1>
+        <p>Request what you need, follow every update, and know when your documents are ready.</p>
+      </div>
+      <div class="auth-aside-note">
+        <span class="auth-note-icon" aria-hidden="true">&#10003;</span>
+        <span>A simpler way to stay on top of every request.</span>
+      </div>
+      <span class="auth-orbit auth-orbit-one" aria-hidden="true"></span>
+      <span class="auth-orbit auth-orbit-two" aria-hidden="true"></span>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-form-wrap">
+        <p class="auth-overline">WELCOME BACK</p>
+        <h2>Sign in to your account</h2>
+        <p class="auth-description">Enter your school account details to continue.</p>
+
+        {% if form.errors %}
+          <div class="alert alert-error" role="alert">That username and password combination wasn't recognized. Please try again.</div>
+        {% endif %}
+        {% if next and user.is_authenticated %}
+          <div class="alert alert-error" role="alert">Your account does not have access to this page.</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}" class="form auth-form">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="field-error" role="alert">{{ form.non_field_errors }}</div>
+          {% endif %}
+          <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            <input type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default:'' }}" autocomplete="username" autofocus required>
+            {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}" autocomplete="current-password" required>
+            {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <input type="hidden" name="next" value="{{ next }}">
+          <button type="submit" class="btn btn-primary btn-block auth-submit">Sign in <span aria-hidden="true">&rarr;</span></button>
+        </form>
+
+        <p class="auth-switch">New to SDRRS? <a href="{% url 'signup' %}">Create a student account</a></p>
+        <p class="auth-foot">Registrar and administrator accounts are managed by your school.</p>
+      </div>
+      <span class="auth-panel-footer">STUDENT DOCUMENT REQUEST &amp; RELEASE SYSTEM</span>
+    </section>
+  </main>
+</body>
+</html>
